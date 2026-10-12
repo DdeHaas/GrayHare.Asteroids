@@ -1,4 +1,4 @@
-﻿using GrayHare.Asteroids.GameObjects;
+using GrayHare.Asteroids.GameObjects;
 using GrayHare.GameEngine.Animation;
 using GrayHare.GameEngine.Application;
 using GrayHare.GameEngine.Diagnostics;
@@ -97,6 +97,7 @@ internal static class UfoSystem
         }
 
         List<Asteroid> obstacles = world.Query<Asteroid>().Select(entity => world.GetComponent<Asteroid>(entity)).ToList();
+        Vector2f viewportSize = host.Camera.ViewportSize;
 
         world.ForEach<Ufo>((entity, ufo) =>
         {
@@ -104,9 +105,9 @@ internal static class UfoSystem
 
             if (ufo.IsLeaving)
             {
-                ufo.Update(deltaTime, obstacles);
+                ufo.Update(deltaTime, obstacles, viewportSize);
 
-                if (IsOutOfBounds(ufo.Position, ufo.Radius, host.Window.Size))
+                if (IsOutOfBounds(ufo.Position, ufo.Radius, new Vector2u((uint)host.Camera.ViewportSize.X, (uint)host.Camera.ViewportSize.Y)))
                 {
                     host.World.DestroyEntity(entity);
                     ufo.Dispose();
@@ -121,8 +122,8 @@ internal static class UfoSystem
                 return;
             }
 
-            ufo.Position = ufo.Position.WrapPosition(host.Window.Size);
-            ufo.Update(deltaTime, obstacles);
+            ufo.Position = ufo.Position.WrapPosition(new Vector2u((uint)host.Camera.ViewportSize.X, (uint)host.Camera.ViewportSize.Y));
+            ufo.Update(deltaTime, obstacles, viewportSize);
 
             if (!gameOver && _fireCooldown <= 0f && TimeToFireBullet(ufo, deltaTime))
             {
@@ -141,7 +142,7 @@ internal static class UfoSystem
 
             EngineLogger.Log($"UFO spawned");
             Spaceship target = world.GetComponent<Spaceship>(entity);
-            Ufo ufo = CreateUfo(host.Window.Size, target);
+            Ufo ufo = CreateUfo(new Vector2u((uint)host.Camera.ViewportSize.X, (uint)host.Camera.ViewportSize.Y), target);
             host.World.AddComponent(host.World.CreateEntity(), ufo);
         }
     }

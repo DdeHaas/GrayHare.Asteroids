@@ -49,12 +49,8 @@ internal sealed class GameplayScene : GameSceneBase
         EngineLogger.Log("Loading GameplayScene");
 
         _pauseLayer = new PauseLayer(_font);
-        _hudLayer = new HudLayer(_font);
-        _gameOverLayer = new GameOverLayer(_font);
-        _gameOverLayer.GameOverHandled += () =>
-        {
-            host.ChangeScene(new WelcomeScene(_assets));
-        };
+        _hudLayer = new HudLayer(_font, () => _score, () => _lives, () => _level);
+        _gameOverLayer = new GameOverLayer(_font, () => _score, () => host.ChangeScene(new WelcomeScene(_assets)));
 
         AddLayer(new StarfieldLayer(GameConstants.Stars));
         AddLayer(_pauseLayer);
@@ -113,6 +109,12 @@ internal sealed class GameplayScene : GameSceneBase
         ArgumentNullException.ThrowIfNull(host);
 
         base.Update(host, gameTime);
+
+        if (host.Input.WasKeyPressed(Keyboard.Key.F11))
+        {
+            host.ToggleFullscreen();
+            return;
+        }
 
         if (host.InputActions!.WasActionPressed(GameConstants.Debug, host.Input))
         {
@@ -173,15 +175,16 @@ internal sealed class GameplayScene : GameSceneBase
         {
             EngineLogger.Log("Game Over");
 
+            if (_score > HighScoreStore.Load())
+            {
+                EngineLogger.Log($"New High Score: {_score}");
+                HighScoreStore.Save(_score);
+            }
+
             _gameOver = true;
-            _gameOverLayer!.Score = _score;
             _gameOverLayer.IsGameOver = _gameOver;
             _pauseLayer.IsGameOver = _gameOver;
         }
-
-        _hudLayer.Score = _score;
-        _hudLayer.Lives = _lives;
-        _hudLayer.Level = _level;
     }
 
     public override void RenderLayer(GameHost host, RenderWindow window)

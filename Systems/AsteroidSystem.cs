@@ -1,4 +1,4 @@
-﻿using GrayHare.Asteroids.GameObjects;
+using GrayHare.Asteroids.GameObjects;
 using GrayHare.GameEngine.Animation;
 using GrayHare.GameEngine.Application;
 using GrayHare.GameEngine.Diagnostics;
@@ -85,7 +85,7 @@ internal static class AsteroidSystem
                 return;
             }
 
-            asteroid.Position = asteroid.Position.WrapPosition(host.Window.Size);
+            asteroid.Position = asteroid.Position.WrapPosition(new Vector2u((uint)host.Camera.ViewportSize.X, (uint)host.Camera.ViewportSize.Y));
             asteroid.Update(deltaTime);
         });
 
@@ -94,7 +94,7 @@ internal static class AsteroidSystem
         {
             if (asteroidCount < _maxAsteroids)
             {
-                Asteroid asteroid = AsteroidSystem.CreateAsteroid(AsteroidSize.Large, host.Window.Size);
+                Asteroid asteroid = AsteroidSystem.CreateAsteroid(AsteroidSize.Large, new Vector2u((uint)host.Camera.ViewportSize.X, (uint)host.Camera.ViewportSize.Y));
                 world.AddComponent(world.CreateEntity(), asteroid);
             }
             else if (asteroidCount >= _maxAsteroids)

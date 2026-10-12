@@ -35,4 +35,4 @@ This project is licensed under the zlib License. See the [LICENSE](LICENSE) file
 
 ## Notes
 
-- GrayHare.Asteroids has been tested on Windows and Linux Mint.
+- GrayHare.Asteroids has been tested on Windows, Linux Mint and Debian 13.

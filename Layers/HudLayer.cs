@@ -21,20 +21,22 @@ internal sealed class HudLayer : ISceneLayer
 
     public int RenderOrder => 10;
 
-    public int Score { get; set; }
+    private readonly Func<int> _getScore;
+    private readonly Func<int> _getLives;
+    private readonly Func<int> _getLevel;
 
-    public int Lives { get; set; }
-
-    public int Level { get; set; }
-
-    public HudLayer(Font font)
+    public HudLayer(Font font, Func<int> getScore, Func<int> getLives, Func<int> getLevel)
     {
         ArgumentNullException.ThrowIfNull(font);
+        ArgumentNullException.ThrowIfNull(getScore);
+        ArgumentNullException.ThrowIfNull(getLives);
+        ArgumentNullException.ThrowIfNull(getLevel);
+
+        _getScore = getScore;
+        _getLives = getLives;
+        _getLevel = getLevel;
 
         _font = font;
-        Lives = GameConstants.PlayerLives;
-        Score = 0;
-        Level = 0;
     }
 
     public void Load(GameHost host)
@@ -58,23 +60,25 @@ internal sealed class HudLayer : ISceneLayer
     {
         ArgumentNullException.ThrowIfNull(host);
 
-        if (Score != _lastScore)
+        int score = _getScore();
+        if (score != _lastScore)
         {
-            _scoreText = $"SCORE: {Score}";
-            _lastScore = Score;
+            _scoreText = $"SCORE: {score}";
+            _lastScore = score;
 
-            if (Score > _highScore)
+            if (score > _highScore)
             {
-                _highScore = Score;
+                _highScore = score;
             }
 
             _highScoreText = $"HIGH: {_highScore:D}";
         }
 
-        if (Level != _lastLevel)
+        int level = _getLevel();
+        if (level != _lastLevel)
         {
-            _levelText = $"LEVEL {Level}";
-            _lastLevel = Level;
+            _levelText = $"LEVEL {level}";
+            _lastLevel = level;
         }
     }
 
@@ -94,12 +98,13 @@ internal sealed class HudLayer : ISceneLayer
         levelText.FillColor = Color.White;
 
         FloatRect box = levelText.GetLocalBounds();
-        float levelTextX = GameConstants.WindowWidth - box.Width - 10f;
+        float levelTextX = host.Camera.ViewportSize.X - box.Width - 10f;
         levelText.Position = new Vector2f(levelTextX, 8);
 
         window.Draw(levelText);
 
-        for (int i = 0; i < Lives; i++)
+        int lives = _getLives();
+        for (int i = 0; i < lives; i++)
         {
             float shipX = 24f + (i * 16f);
             using ConvexShape ship = SystemHelper.ToConvexShape(ShapeFactory.CreateSpaceshipSmall(), Color.Transparent, Color.White, 1f, new Vector2f(shipX, 40f), 0f);

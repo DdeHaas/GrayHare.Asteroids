@@ -9,8 +9,8 @@ namespace GrayHare.Asteroids.Layers;
 
 internal sealed class StarfieldLayer : ISceneLayer
 {
-    private uint _width;
-    private uint _height;
+    private float _width;
+    private float _height;
     private Vector2f _offset;
     private List<Star> _stars = new();
     private CircleShape _starShape = null!;
@@ -29,8 +29,8 @@ internal sealed class StarfieldLayer : ISceneLayer
 
         EngineLogger.Log("Loading StarfieldLayer");
 
-        _width = host.Window.Size.X;
-        _height = host.Window.Size.Y;
+        _width = host.Camera.ViewportSize.X;
+        _height = host.Camera.ViewportSize.Y;
 
         _offset = Constants.Vectors.Zero;
         _starShape = new CircleShape(1.0f);
@@ -57,6 +57,17 @@ internal sealed class StarfieldLayer : ISceneLayer
     {
         ArgumentNullException.ThrowIfNull(host);
 
+        // Regenerate stars when viewport size changes (e.g. fullscreen toggle).
+        float newW = host.Camera.ViewportSize.X;
+        float newH = host.Camera.ViewportSize.Y;
+        if (newW != _width || newH != _height)
+        {
+            _width = newW;
+            _height = newH;
+            _stars.Clear();
+            GenerateStars(_starCount);
+        }
+
         float deltaTime = gameTime.DeltaTotalSeconds;
 
         for (int i = 0; i < _stars.Count; i++)
@@ -82,7 +93,7 @@ internal sealed class StarfieldLayer : ISceneLayer
 
         foreach (Star star in _stars)
         {
-            Vector2f wrappedPos = (star.Position + _offset).WrapPosition(window.Size);
+            Vector2f wrappedPos = (star.Position + _offset).WrapPosition(new Vector2u((uint)_width, (uint)_height));
 
             DrawStarAtPosition(window, wrappedPos, star);
 

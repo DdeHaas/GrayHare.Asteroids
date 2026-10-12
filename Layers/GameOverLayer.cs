@@ -15,10 +15,10 @@ internal sealed class GameOverLayer : ISceneLayer
 
     private bool _isGameOver;
     private bool _isEnabled;
-    private bool _isNewHighScore;
-    private bool _highScoreChecked;
 
-    public event Action? GameOverHandled;
+    private readonly int _currentHighScore = HighScoreStore.Load();
+    private readonly Func<int> _getScore;
+    private readonly Action _gameOverAction;
 
     public int RenderOrder => int.MaxValue;
 
@@ -35,15 +35,15 @@ internal sealed class GameOverLayer : ISceneLayer
         }
     }
 
-    public int Score { get; set; }
-
-    public GameOverLayer(Font font)
+    public GameOverLayer(Font font, Func<int> getScore, Action gameOverAction)
     {
         ArgumentNullException.ThrowIfNull(font);
+        ArgumentNullException.ThrowIfNull(getScore);
+        ArgumentNullException.ThrowIfNull(gameOverAction);
 
         _font = font;
-        IsGameOver = false;
-        Score = 0;
+        _getScore = getScore;
+        _gameOverAction = gameOverAction;
     }
 
     public void Load(GameHost host)
@@ -69,25 +69,13 @@ internal sealed class GameOverLayer : ISceneLayer
             return;
         }
 
-        if (!_highScoreChecked)
-        {
-            _highScoreChecked = true;
-            int storedHighScore = HighScoreStore.Load();
-            _isNewHighScore = Score > 0 && Score >= storedHighScore;
-            if (_isNewHighScore)
-            {
-                HighScoreStore.Save(Score);
-            }
-        }
-
         _returnTimer += gameTime.RawDeltaTotalSeconds;
 
-        // Animate dots while waiting
         _waitTimerText = new string('.', Math.Max(0, GameConstants.GameOverWaitTimer - (int)_returnTimer));
 
         if (_returnTimer >= GameConstants.GameOverWaitTimer)
         {
-            GameOverHandled?.Invoke();
+            _gameOverAction.Invoke();
         }
     }
 
@@ -101,14 +89,15 @@ internal sealed class GameOverLayer : ISceneLayer
             return;
         }
 
-        using RectangleShape overlay = new(new Vector2f(window.Size.X, window.Size.Y));
+        using RectangleShape overlay = new(new Vector2f(host.Camera.ViewportSize.X, host.Camera.ViewportSize.Y));
         overlay.FillColor = new Color(0, 0, 0, 160);
         window.Draw(overlay);
 
+        int score = _getScore();
         window.DrawCenteredText(_font, 60, Color.Red, "GAME OVER", 200f);
-        window.DrawCenteredText(_font, 30, Color.White, $"SCORE: {Score}", 295f);
+        window.DrawCenteredText(_font, 30, Color.White, $"SCORE: {score}", 295f);
 
-        if (_isNewHighScore)
+        if (score > 0 && score > _currentHighScore)
         {
             window.DrawCenteredText(_font, 30, Color.Yellow, "NEW HIGH SCORE!", 350f);
         }

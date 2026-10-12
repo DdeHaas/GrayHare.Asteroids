@@ -63,13 +63,13 @@ internal sealed class PauseLayer : ISceneLayer
             return;
         }
 
-        using RectangleShape veil = new(new Vector2f(window.Size.X, window.Size.Y))
+        using RectangleShape veil = new(new Vector2f(host.Camera.ViewportSize.X, host.Camera.ViewportSize.Y))
         {
             FillColor = new Color(0, 0, 0, 160)
         };
 
         window.Draw(veil);
-        window.DrawCenteredText(_font, 64, Color.White, "PAUSED", window.Size.Y / 2f);
-        window.DrawCenteredText(_font, 22, new Color(200, 200, 200), "Press P to resume", window.Size.Y / 2f + 60f);
+        window.DrawCenteredText(_font, 64, Color.White, "PAUSED", host.Camera.ViewportSize.Y / 2f);
+        window.DrawCenteredText(_font, 22, new Color(200, 200, 200), "Press P to resume", host.Camera.ViewportSize.Y / 2f + 60f);
     }
 }

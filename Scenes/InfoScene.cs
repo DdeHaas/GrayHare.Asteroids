@@ -56,6 +56,12 @@ internal sealed class InfoScene : GameSceneBase
             return;
         }
 
+        if (host.Input.WasKeyPressed(Keyboard.Key.F11))
+        {
+            host.ToggleFullscreen();
+            return;
+        }
+
         if (host.Input.WasAnyKeyPressed()
             || host.Input.WasJoystickButtonReleased(GameConstants.JoystickId, GameConstants.ButtonStart)
             || host.Input.WasJoystickButtonReleased(GameConstants.JoystickId, GameConstants.ButtonL1)
@@ -105,7 +111,7 @@ internal sealed class InfoScene : GameSceneBase
             ("SELECT", "Quit"),
         });
 
-        window.DrawCenteredText(_font, 14, new Color(100, 100, 100), "Powered by GrayHare GameEngine", host.Window.Size.Y - 20f);
+        window.DrawCenteredText(_font, 14, new Color(100, 100, 100), "Powered by GrayHare GameEngine", host.Camera.ViewportSize.Y - 20f);
     }
 
     private void DrawControlsSection(RenderWindow window, string header, float x, float startY, (string Action, string Description)[] rows)

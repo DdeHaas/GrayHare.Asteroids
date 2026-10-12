@@ -1,4 +1,4 @@
-﻿using GrayHare.Asteroids.GameObjects;
+using GrayHare.Asteroids.GameObjects;
 using GrayHare.GameEngine.Application;
 using GrayHare.GameEngine.Diagnostics;
 using GrayHare.GameEngine.Ecs;
@@ -100,7 +100,7 @@ internal static class BulletSystem
                 return;
             }
 
-            bullet.Position = bullet.Position.WrapPosition(host.Window.Size);
+            bullet.Position = bullet.Position.WrapPosition(new Vector2u((uint)host.Camera.ViewportSize.X, (uint)host.Camera.ViewportSize.Y));
             bullet.Update(deltaTime);
         });
 

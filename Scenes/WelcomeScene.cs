@@ -1,4 +1,4 @@
-﻿using GrayHare.Asteroids.GameObjects;
+using GrayHare.Asteroids.GameObjects;
 using GrayHare.Asteroids.Layers;
 using GrayHare.Asteroids.Systems;
 using GrayHare.GameEngine.Application;
@@ -8,6 +8,7 @@ using GrayHare.GameEngine.Ecs;
 using GrayHare.GameEngine.Extensions;
 using GrayHare.GameEngine.Scenes;
 using SFML.Graphics;
+using SFML.System;
 using SFML.Window;
 
 namespace GrayHare.Asteroids.Scenes;
@@ -48,11 +49,12 @@ internal sealed class WelcomeScene : GameSceneBase
 
         World world = host.World;
 
-        world.AddComponent(world.CreateEntity(), AsteroidSystem.CreateAsteroid(AsteroidSize.Large, host.Window.GetCenter()));
-        world.AddComponent(world.CreateEntity(), AsteroidSystem.CreateAsteroid(AsteroidSize.Medium, host.Window.GetCenter()));
-        world.AddComponent(world.CreateEntity(), AsteroidSystem.CreateAsteroid(AsteroidSize.Small, host.Window.GetCenter()));
-        world.AddComponent(world.CreateEntity(), AsteroidSystem.CreateAsteroid(AsteroidSize.Small, host.Window.GetCenter()));
-        world.AddComponent(world.CreateEntity(), AsteroidSystem.CreateAsteroid(AsteroidSize.Small, host.Window.GetCenter()));
+        Vector2f center = host.Camera.ViewportSize / 2f;
+        world.AddComponent(world.CreateEntity(), AsteroidSystem.CreateAsteroid(AsteroidSize.Large, center));
+        world.AddComponent(world.CreateEntity(), AsteroidSystem.CreateAsteroid(AsteroidSize.Medium, center));
+        world.AddComponent(world.CreateEntity(), AsteroidSystem.CreateAsteroid(AsteroidSize.Small, center));
+        world.AddComponent(world.CreateEntity(), AsteroidSystem.CreateAsteroid(AsteroidSize.Small, center));
+        world.AddComponent(world.CreateEntity(), AsteroidSystem.CreateAsteroid(AsteroidSize.Small, center));
 
         if (SteeringDebugDrawer.Enabled)
         {
@@ -87,6 +89,12 @@ internal sealed class WelcomeScene : GameSceneBase
             return;
         }
 
+        if (host.Input.WasKeyPressed(Keyboard.Key.F11))
+        {
+            host.ToggleFullscreen();
+            return;
+        }
+
         if (host.Input.WasAnyKeyPressed()
             || host.Input.WasJoystickButtonReleased(GameConstants.JoystickId, GameConstants.ButtonStart))
         {
@@ -109,7 +117,7 @@ internal sealed class WelcomeScene : GameSceneBase
 
         world.ForEach<Asteroid>((entity, asteroid) =>
         {
-            asteroid.Position = asteroid.Position.WrapPosition(host.Window.Size);
+            asteroid.Position = asteroid.Position.WrapPosition(new Vector2u((uint)host.Camera.ViewportSize.X, (uint)host.Camera.ViewportSize.Y));
             asteroid.Update(deltaTime);
         });
 
@@ -133,8 +141,6 @@ internal sealed class WelcomeScene : GameSceneBase
 
         window.DrawCenteredText(_font, 72, new Color(60, 200, 60), "ASTEROIDS", 130f);
 
-        var center = window.GetView().Center;
-        Color color = Color.White;
         if (_highScore > 0)
         {
             window.DrawCenteredText(_font, 24, Color.White, $"HIGH SCORE: {_highScore}", 258f);
@@ -145,6 +151,6 @@ internal sealed class WelcomeScene : GameSceneBase
             window.DrawCenteredText(_font, 28, Color.Yellow, "PRESS ANY KEY TO START", 450f);
         }
 
-        window.DrawCenteredText(_font, 14, new Color(100, 100, 100), "Powered by GrayHare GameEngine", host.Window.Size.Y - 20f);
+        window.DrawCenteredText(_font, 14, new Color(100, 100, 100), "Powered by GrayHare GameEngine", host.Camera.ViewportSize.Y - 20f);
     }
 }

@@ -1,4 +1,4 @@
-﻿using GrayHare.Asteroids.GameObjects;
+using GrayHare.Asteroids.GameObjects;
 using GrayHare.GameEngine.Animation;
 using GrayHare.GameEngine.Application;
 using GrayHare.GameEngine.Diagnostics;
@@ -59,7 +59,7 @@ internal static class PlayerSystem
                 return _lives;
             }
 
-            player = CreatePlayer(host.Window.DefaultView.Center);
+            player = CreatePlayer(host.Camera.ViewportSize / 2f);
             world.AddComponent(world.CreateEntity(), player);
         }
         else
@@ -77,7 +77,7 @@ internal static class PlayerSystem
         player.IsThrottling = PlayerControl.IsThrottling(host);
         player.IsTurningLeft = PlayerControl.IsTurningLeft(host);
         player.IsTurningRight = PlayerControl.IsTurningRight(host);
-        player.Position = player.Position.WrapPosition(host.Window.Size);
+        player.Position = player.Position.WrapPosition(new Vector2u((uint)host.Camera.ViewportSize.X, (uint)host.Camera.ViewportSize.Y));
 
         player.Update(deltaTime);
 

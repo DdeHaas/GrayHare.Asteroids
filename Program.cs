@@ -1,4 +1,4 @@
-﻿using GrayHare.Asteroids;
+using GrayHare.Asteroids;
 using GrayHare.Asteroids.Scenes;
 using GrayHare.GameEngine.Application;
 using GrayHare.GameEngine.Diagnostics;
@@ -23,6 +23,8 @@ GameApplicationOptions options = new()
     VerticalSyncEnabled = true,
     ContentRootPath = contentRoot,
     LogHandler = Console.WriteLine,
+    AllowFullscreenToggle = true,
+    FullscreenScaling = FullscreenScaling.None,
 };
 
 new GameApplication(options).Run(new WelcomeScene(assets));

@@ -38,6 +38,7 @@ internal sealed class Ufo : IMovableGameObject
     private const float AgentRadius = 14f;
     private const float DetectionLength = 120f;
     private Vector2f? _exitPoint;
+    private Vector2f _viewportSize = new(GameConstants.WindowWidth, GameConstants.WindowHeight);
 
     public float Radius { get; private set; }
     public UfoSize Size { get; private set; }
@@ -63,14 +64,15 @@ internal sealed class Ufo : IMovableGameObject
 
     public void Update(float deltaTime)
     {
-        Update(deltaTime, Array.Empty<IGameObject>());
+        Update(deltaTime, Array.Empty<IGameObject>(), _viewportSize);
     }
 
-    public void Update(float deltaTime, IReadOnlyList<IGameObject> obstacles)
+    public void Update(float deltaTime, IReadOnlyList<IGameObject> obstacles, Vector2f viewportSize)
     {
         ArgumentNullException.ThrowIfNull(obstacles);
 
         _obstacles = obstacles;
+        _viewportSize = viewportSize;
 
         Vector2f baseForce = Constants.Vectors.Zero;
 
@@ -78,7 +80,7 @@ internal sealed class Ufo : IMovableGameObject
         {
             if (!_exitPoint.HasValue)
             {
-                _exitPoint = GetExitPoint();
+                _exitPoint = GetExitPoint(_viewportSize);
             }
 
             baseForce = _steeringBehavior.Seek(_exitPoint.Value);
@@ -125,25 +127,27 @@ internal sealed class Ufo : IMovableGameObject
         }
     }
 
-    private Vector2f GetExitPoint()
+    private Vector2f GetExitPoint(Vector2f viewportSize)
     {
-        var center = new Vector2f(GameConstants.WindowWidth / 2f, GameConstants.WindowHeight / 2f);
-        var radius = Radius.ToVector2f();
+        Vector2f center = viewportSize / 2f;
+        Vector2f radius = Radius.ToVector2f();
 
-        var x = Position.X;
-        var y = Position.Y;
+        float x = Position.X;
+        float y = Position.Y;
 
         if (x > center.X && y < center.Y)
         {
-            return new Vector2f(GameConstants.WindowWidth, 0) + radius;
+            return new Vector2f(viewportSize.X, 0f) + radius;
         }
-        else if (x < center.X && y > center.Y)
+
+        if (x < center.X && y > center.Y)
         {
-            return new Vector2f(0, GameConstants.WindowHeight) + radius;
+            return new Vector2f(0f, viewportSize.Y) + radius;
         }
-        else if (x > center.X && y > center.Y)
+
+        if (x > center.X && y > center.Y)
         {
-            return new Vector2f(GameConstants.WindowWidth, GameConstants.WindowHeight) - radius;
+            return new Vector2f(viewportSize.X, viewportSize.Y) - radius;
         }
 
         return Constants.Vectors.Zero - radius;
